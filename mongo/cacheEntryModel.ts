@@ -1,10 +1,12 @@
 import { Document, Schema, Model, model } from 'mongoose';
 import { OperationFailedException } from '../errors/customErrors';
+import { makeDummyString } from '../utilities';
 
 export interface ICacheEntryDocument extends Document {
   key: string;
   value: string;
   time: number;
+  getValue(): string;
 }
 
 export const CacheEntrySchema: Schema = new Schema({
@@ -38,6 +40,19 @@ CacheEntrySchema.static('insertOne', async (key: string, value: string, loopCoun
     CacheEntry.insertOne(key, value, loopCounter);
   }
 });
+
+let ttl_duration = 1 * 1000;
+CacheEntrySchema.method('getValue', function (): string {
+  if (this.time + ttl_duration < new Date().getTime()) {
+    var value = makeDummyString();
+    this.value = value;
+  }
+  this.time = new Date().getTime();
+  this.save();
+
+  return this.value;
+});
+
 
 export const CacheEntry = model<Model<ICacheEntryDocument>,ICacheEntryModel>('CacheEntry', CacheEntrySchema);
 export default CacheEntry;
