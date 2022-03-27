@@ -1,3 +1,4 @@
+import { OperationFailedException } from "../errors/customErrors";
 import cacheEntryModel from "../mongo/cacheEntryModel";
 import { BaseEndpoint } from "./baseEndpoint"
 
@@ -18,6 +19,7 @@ class GetAllCachesEndpoint extends BaseEndpoint {
         }
         catch (err) {
             console.log(err)
+            throw new OperationFailedException()
         }
     }
 }

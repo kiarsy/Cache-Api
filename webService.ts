@@ -2,6 +2,7 @@
 import express, { Request, Response, NextFunction, Express } from 'express';
 import bodyParser from 'body-parser'
 import { BaseEndpoint } from './endpoints/baseEndpoint';
+import ErrorHandlerMiddleware from './middlewares/errorHandleMiddleware';
 
 export class WebService {
     private app: Express;
@@ -26,6 +27,9 @@ export class WebService {
                 //EXECUTE ENDPOINT
                 endpoint.endpointFunction(req.params, req.body, (result) => {
                     res.status(result.statusCode).json(result.data);
+                }).catch(e => {
+                    //IF ENDPOINT THROW AN EXCEPTION IT WILL GO TO ERROR HANDLER MIDDLEWARE
+                    next(e);
                 })
                 return;
             }
@@ -36,6 +40,8 @@ export class WebService {
 
 
     startWebService(port: Number = 3000) {
+        this.app.use(ErrorHandlerMiddleware);
+
         this.app.listen(port, () => {
             console.log(`listening on ${port}.`);
         });
