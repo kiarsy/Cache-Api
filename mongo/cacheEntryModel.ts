@@ -2,6 +2,7 @@ import { Document, Schema, Model, model } from 'mongoose';
 import { OperationFailedException } from '../errors/customErrors';
 import { makeDummyString } from '../utilities';
 import { v4 as uuidv4 } from 'uuid';
+import * as config from '../config.json';
 
 export interface ICacheEntryDocument extends Document {
   key: string;
@@ -26,7 +27,7 @@ export interface ICacheEntryModel extends Model<ICacheEntryDocument> {
 CacheEntrySchema.static('insertOne', async (key: string, value: string, loopCounter: number = 0): Promise<void> => {
   //Select the oldest entry existed to replace with new entry.
   let oldestEntry = await CacheEntry.findOne().sort([['time', 'asc']]);
-  
+
   // REPLACE the oldestEntry with new values with filter on key and time, so if during this operation another request 
   // changed the "oldestEntry" it will not work
   var newEntry = await CacheEntry.findOneAndReplace({ key: oldestEntry!["key"], time: oldestEntry!["time"] }, { key: key, value: value, time: new Date().getTime() });
@@ -66,9 +67,9 @@ CacheEntrySchema.static('initializing', async (limit: number): Promise<void> => 
 
 });
 
-let ttl_duration = 1 * 1000;
+
 CacheEntrySchema.method('getValue', function (): string {
-  if (this.time + ttl_duration < new Date().getTime()) {
+  if (this.time + (config.ttlInSec * 1000) < new Date().getTime()) {
     var value = makeDummyString();
     this.value = value;
   }
@@ -79,5 +80,5 @@ CacheEntrySchema.method('getValue', function (): string {
 });
 
 
-export const CacheEntry = model<Model<ICacheEntryDocument>,ICacheEntryModel>('CacheEntry', CacheEntrySchema);
+export const CacheEntry = model<Model<ICacheEntryDocument>, ICacheEntryModel>('CacheEntry', CacheEntrySchema);
 export default CacheEntry;
