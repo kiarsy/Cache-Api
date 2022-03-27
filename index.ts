@@ -20,6 +20,8 @@ mongoConnection.connect()
 
 import { WebService } from './webService';
 import cachesReturnAll from './endpoints/caches.return.all';
+import cachesCreateOne from './endpoints/caches.create.one';
 const web = new WebService();
 web.addEndPoint(cachesReturnAll)
+web.addEndPoint(cachesCreateOne)
 web.startWebService()
