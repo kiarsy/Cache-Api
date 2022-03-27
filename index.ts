@@ -25,6 +25,7 @@ web.addEndPoint(UpdateOneCachesEndpoint);
 mongoConnection.connect()
     .once("open", async function () {
         console.log("MONGO Connected Successfully.");
+        await cacheEntryModel.initializing(20);
         web.startWebService()
     })
     .once("error", function (err) {

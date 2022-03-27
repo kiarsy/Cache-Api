@@ -1,6 +1,7 @@
 import { Document, Schema, Model, model } from 'mongoose';
 import { OperationFailedException } from '../errors/customErrors';
 import { makeDummyString } from '../utilities';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ICacheEntryDocument extends Document {
   key: string;
@@ -18,6 +19,7 @@ export const CacheEntrySchema: Schema = new Schema({
 
 export interface ICacheEntryModel extends Model<ICacheEntryDocument> {
   insertOne(key: string, value: string, loopCounter: number): Promise<void>;
+  initializing(limit: number): Promise<void>;
 }
 
 
@@ -39,6 +41,29 @@ CacheEntrySchema.static('insertOne', async (key: string, value: string, loopCoun
 
     CacheEntry.insertOne(key, value, loopCounter);
   }
+});
+
+
+// This method runs on project runs,
+// it will make sure that atleast a specific numbers of documents (limit) exist in the mongo
+// This method ("initializing") and "insertOne" work together to make sure that
+// the number of cache entries are klimited to limit number
+CacheEntrySchema.static('initializing', async (limit: number): Promise<void> => {
+  let currentDocuments = await CacheEntry.count();
+
+  if (currentDocuments < limit) {
+    var neededDocuments = limit - currentDocuments;
+
+    var documents = [];
+    while (neededDocuments > 0) {
+
+      documents.push({ key: uuidv4(), time: 0, value: "empty" });
+      neededDocuments--;
+    }
+
+    await CacheEntry.insertMany(documents);
+  }
+
 });
 
 let ttl_duration = 1 * 1000;
