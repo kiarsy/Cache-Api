@@ -22,8 +22,12 @@ import { WebService } from './webService';
 import cachesReturnAll from './endpoints/caches.return.all';
 import cachesCreateOne from './endpoints/caches.create.one';
 import cachesDeleteAll from './endpoints/caches.delete.all';
+import cachesDeleteOne from './endpoints/caches.delete.one';
+import cachesUpdateOne from './endpoints/caches.update.one';
 const web = new WebService();
 web.addEndPoint(cachesReturnAll)
 web.addEndPoint(cachesCreateOne)
 web.addEndPoint(cachesDeleteAll)
+web.addEndPoint(cachesDeleteOne)
+web.addEndPoint(cachesUpdateOne)
 web.startWebService()
