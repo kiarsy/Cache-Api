@@ -46,9 +46,14 @@ CacheEntrySchema.static('insertOne', async (key: string, value: string, loopCoun
 
 
 // This method runs on project runs,
-// it will make sure that atleast a specific numbers of documents (limit) exist in the mongo
+// ####
+// it will make sure that atleast a specific numbers of documents (maxCacheItem in config.json) exist in the mongo
 // This method ("initializing") and "insertOne" work together to make sure that
-// the number of cache entries are klimited to limit number
+// the number of cache entries are limited to maxCacheItem.
+// #####
+// It will add as much as maxCacheItem documents in the mongo and with help of insertOne which does not insert
+// new documents only replace the oldest one with the new one, The system will never exceed the limitation.
+
 CacheEntrySchema.static('initializing', async (limit: number): Promise<void> => {
   let currentDocuments = await CacheEntry.count();
 
